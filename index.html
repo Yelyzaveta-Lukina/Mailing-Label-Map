@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coral Gables Map</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- ✅ Libraries that script.js depends on go BEFORE script.js -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- ArcGIS Maps SDK for JavaScript -->
+    <script src="https://js.arcgis.com/4.34/"></script>
+
+    <!-- Map Components -->
+    <script type="module" src="https://js.arcgis.com/4.34/map-components/"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.34/esri/themes/light/main.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header class="topbar">
+  <div class="topbar-title left">
+    City of Coral Gables: Mailing Labels App
+  </div>
+
+  <div class="topbar-right">
+    <img
+      src="assets/City Logo White.png"
+      alt="City of Coral Gables Seal"
+      class="topbar-logo"
+    />
+  </div>
+</header>
+
+
+    <div class="app">
+      <div class="sidebar">
+  <h3>Navigation</h3>
+
+  <div class="nav-icons" aria-label="Map navigation">
+    <button id="btn-home" class="icon-btn" type="button" title="Home (Coral Gables)" aria-label="Home">
+      <i class="fa-solid fa-home"></i>
+    </button>
+
+    <button id="btn-zoom-in" class="icon-btn">
+      <i class="fa-solid fa-magnifying-glass-plus"></i>
+    </button>
+
+    <button id="btn-zoom-out" class="icon-btn">
+      <i class="fa-solid fa-magnifying-glass-minus"></i>
+    </button>
+
+
+    <button id="btn-clear" class="icon-btn danger" type="button" title="Clear selection" aria-label="Clear">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <button id="help-btn" class="help-btn" type="button" aria-label="Help">
+   Help Guides
+  </button>
+
+
+  <div id="radius-panel" class="radius-panel hidden">
+    <label for="radius">Radius:</label>
+    <input id="radius" type="number" value="1000" />
+    <select id="radiusUnit">
+      <option value="feet" selected>feet</option>
+      <option value="meters">meters</option>
+    </select>
+  </div>
+
+  
+</div>
+
+
+      <div class="main">
+        <arcgis-map id="map" basemap="streets-navigation-vector"></arcgis-map>
+      </div>
+    </div>
+
+    <!-- Bottom-right toast -->
+    <div id="toast" class="toast hidden">
+      <div class="toast-title" id="toast-title">Selected</div>
+      <div class="toast-sub" id="toast-sub">0 addresses selected</div>
+    </div>
+
+    <!-- Draw / Selection button -->
+    <button id="draw-btn" class="floating-btn draw-btn" aria-label="Selection tools">
+      <i class="fa-regular fa-square"></i>
+      <span class="fab-tooltip">Select a shape to draw the area</span>
+    </button>
+
+    <div id="draw-menu" class="draw-menu hidden">
+      <button type="button" id="tool-arrow">Arrow</button>
+      <button type="button" id="tool-rectangle">Square</button>
+      <button type="button" id="tool-polygon">Polygon</button>
+    </div>
+
+    <!-- Draft Labels button (floating) -->
+    <button id="draft-btn" class="floating-btn draft-btn" aria-label="Draft Labels">
+      <i class="fa-solid fa-print"></i>
+      <span class="fab-tooltip">Draft labels for selected area</span>
+    </button>
+
+    <!-- Radius button -->
+    <button id="radius-btn" class="floating-btn radius-btn" aria-label="Radius tools">
+      <i class="fa-solid fa-location-dot"></i>
+      <span class="fab-tooltip">Set radius → press Apply</span>
+    </button>
+
+    <div id="radius-menu" class="radius-menu hidden">
+      <div class="radius-menu-title">Radius selection</div>
+
+      <label class="radius-label" for="radiusMenuValue">Radius</label>
+      <input id="radiusMenuValue" type="number" value="1000" />
+
+      <label class="radius-label" for="radiusMenuUnit">Units</label>
+      <select id="radiusMenuUnit">
+        <option value="feet" selected>feet</option>
+        <option value="meters">meters</option>
+      </select>
+
+      <button id="radiusMenuApply" type="button">Apply</button>
+    </div>
+
+    <!-- List button -->
+    <button id="floating-list-btn" class="floating-btn" title="View selected addresses">
+      <i class="fa-solid fa-list"></i>
+      <span class="fab-tooltip">Selected addresses</span>
+    </button>
+
+    <!-- Modal -->
+<div id="modal-overlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">
+        Selected Addresses <span class="modal-count" id="modal-count">0</span>
+      </div>
+      <button id="modal-close" class="modal-close" title="Close">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="addr-toolbar">
+        <div class="addr-filters">
+          <input id="filterOwner" class="filter-input" type="text" placeholder="Filter owner…" />
+          <input id="filterAddress" class="filter-input" type="text" placeholder="Filter address…" />
+
+          <select id="sortAddressNum" class="filter-select">
+            <option value="">Sort Address #</option>
+            <option value="addr_asc">Address #: small → big</option>
+            <option value="addr_desc">Address #: big → small</option>
+          </select>
+
+          <select id="sortZip" class="filter-select">
+            <option value="">Sort ZIP</option>
+            <option value="zip_asc">ZIP: small → big</option>
+            <option value="zip_desc">ZIP: big → small</option>
+          </select>
+
+          <button id="clearFiltersBtn" class="filter-clear" type="button">Clear</button>
+        </div>
+
+        <div class="addr-actions">
+          <button id="downloadBtn" class="download-btn" type="button">Download ▾</button>
+          <div id="downloadMenu" class="download-menu hidden">
+            <button type="button" id="downloadCsv">Download CSV</button>
+            <button type="button" id="downloadXlsx">Download Excel</button>
+          </div>
+        </div>
+      </div>
+
+
+      <div id="empty-state" class="empty-state hidden">
+        No area selected yet. Use <b>Radius 📍</b> or <b>Draw 🔲</b> to select addresses.
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Owner</th>
+              <th>Address</th>
+              <th>City</th>
+              <th>State</th>
+              <th>ZIP</th>
+              <th>FOLIO</th>
+            </tr>
+          </thead>
+          <tbody id="modal-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Draft Labels Modal -->
+<div id="draft-overlay" class="modal-overlay hidden">
+  <div class="modal" style="width:min(720px,96vw);">
+    <div class="modal-header">
+      <div class="modal-title">Draft Labels</div>
+      <button id="draft-close" class="modal-close" title="Close">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+
+        <div style="font-weight:800;">
+          Create labels for the currently selected area
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label><input type="radio" name="draftMode" value="owners" /> Owners</label>
+          <label><input type="radio" name="draftMode" value="residents" /> Residents</label>
+          <label><input type="radio" name="draftMode" value="both" checked /> Residents and Owner</label>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button id="draft-create" class="download-btn" type="button">Create Labels</button>
+        </div>
+
+        <div id="draft-error" style="color:#b00020; font-size:13px; display:none;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <!-- ✅ Load your app code LAST (only once) -->
+    <script src="script.js"></script>
+
+
+<!-- Map Legend -->
+<div id="legend" class="legend is-collapsed">
+  <button id="legend-toggle" class="legend-toggle" type="button" aria-label="Toggle legend">
+    <span class="legend-icon">ℹ️</span>
+    <span class="legend-title">Map Legend</span>
+    <span class="legend-arrow">›</span>
+  </button>
+
+  <div class="legend-body">
+    <div class="legend-section-title">SYMBOLS</div>
+
+    <div class="legend-item">
+      <span class="swatch line red"></span>
+      <span class="legend-text">City boundary (red line)</span>
+    </div>
+
+    <div class="legend-item">
+      <span class="swatch dot blue"></span>
+      <span class="legend-text">Addresses (blue dots)</span>
+    </div>
+
+    <div class="legend-item">
+      <span class="swatch dot selected"></span>
+      <span class="legend-text">Selected addresses (blue with red/white ring)</span>
+    </div>
+
+    <div class="legend-item">
+      <span class="swatch line teal"></span>
+      <span class="legend-text">Selected area boundary</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- Help Center Modal -->
+<div id="help-overlay" class="modal-overlay hidden">
+  <div class="modal" style="width:min(680px,96vw);">
+    <div class="modal-header">
+      <div class="modal-title">Help Guides</div>
+      <button id="help-close" class="modal-close" title="Close">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p style="margin:0 0 14px 0; color:rgba(0,0,0,0.75);">
+        Need help using the map or creating mailing labels? Choose an option below.
+      </p>
+
+      <div class="help-actions">
+        <button id="start-tour-btn" class="help-action primary" type="button">
+          ▶ Start Quick Tour
+        </button>
+
+        <button id="open-guide-btn" class="help-action" type="button">
+          📘 Open User Guide
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Guide Modal -->
+<div id="guide-overlay" class="modal-overlay hidden">
+  <div class="modal" style="width:min(760px,96vw);">
+    <div class="modal-header">
+      <div class="modal-title">User Guide</div>
+      <button id="guide-close" class="modal-close" title="Close">✕</button>
+    </div>
+
+    <div class="modal-body guide-body">
+
+      <h3>How It Works</h3>
+      <ol>
+        <li>Select an area using <b>Draw <i class="fa-regular fa-square"></i></b> or <b>Radius <i class="fa-solid fa-location-dot"></i></b></li>
+        <li>View addresses with <b><i class="fa-solid fa-list"></i> Selected Addresses</b></li>
+        <li>Export data (CSV or Excel)</li>
+        <li>Create labels using <b><i class="fa-solid fa-print"></i> Draft Labels</b></li>
+        <li>Print using Avery 5161 label paper</li>
+      </ol>
+
+      <hr>
+
+      <h3>Select an Area</h3>
+      <ul>
+        <li><b>Draw <i class="fa-regular fa-square"></i>:</b> Draw a rectangle or polygon around the desired area.</li>
+        <li><b>Radius <i class="fa-solid fa-location-dot"></i>:</b> Set a distance, press Apply, then click on the map.</li>
+      </ul>
+
+      <h3>View & Export Addresses</h3>
+      <ul>
+        <li>Click <b><i class="fa-solid fa-list"></i> Selected Addresses</b> to see results.</li>
+        <li>Use filters and sorting to organize data.</li>
+        <li>Download CSV or Excel using the Download button.</li>
+      </ul>
+
+      <h3>Create Mailing Labels</h3>
+      <ul>
+        <li>Click <b><i class="fa-solid fa-print"></i> Draft Labels</b>.</li>
+        <li>Select Owners, Residents, or Both.</li>
+        <li>Click Create Labels to generate printable labels.</li>
+      </ul>
+
+      <h3>Printing Tips (Avery 5161)</h3>
+      <ul>
+        <li>Paper size: Letter</li>
+        <li>Scale: 100% / Actual Size</li>
+        <li>Do NOT use “Fit to page”</li>
+        <li>Recommended browsers: Chrome or Edge</li>
+
+        <li style="margin-top:8px;">
+          <b>Map snapshot:</b> Before printing, make sure the selected area is clearly visible on the screen.
+          Avoid zooming in too close or too far out — keep the full selection comfortably framed so streets and addresses are readable.
+          The app uses your current map view to generate the snapshot on the first print page.
+        </li>
+      </ul>
+
+
+      <h3>Troubleshooting</h3>
+      <ul>
+        <li><b>No addresses selected?</b> Make sure you pressed Apply (Radius) or finished drawing.</li>
+        <li><b>Labels misaligned?</b> Confirm Avery 5161 paper and 100% print scale.</li>
+        <li><b>Draft Labels disabled?</b> You must select an area first.</li>
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- First Time Welcome Modal -->
+<div id="welcome-overlay" class="modal-overlay hidden">
+  <div class="modal" style="width:min(520px,96vw);">
+    <div class="modal-header">
+      <div class="modal-title">Welcome</div>
+    </div>
+
+    <div class="modal-body">
+      <p style="margin:0 0 14px 0; line-height:1.6;">
+        Welcome to the City of Coral Gables Mailing Labels App.
+        <br><br>
+        To help you get started, we offer a quick guided tour that walks through selecting areas, viewing addresses, and creating mailing labels.
+      </p>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button id="welcome-skip" class="tour-btn">Skip</button>
+        <button id="welcome-start" class="tour-btn primary">Start Tour</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Quick Tour Overlay -->
+<div id="tour-overlay" class="tour-overlay hidden">
+  <div id="tour-card" class="tour-card" role="dialog" aria-label="Quick Tour">
+    <div id="tour-arrow" class="tour-arrow"></div>
+    <div class="tour-top">
+      <div class="tour-title" id="tour-title">Quick Tour</div>
+      <button id="tour-exit" class="tour-exit" type="button" aria-label="Exit tour">✕</button>
+    </div>
+
+    <div class="tour-body" id="tour-body">
+      Tour text...
+    </div>
+
+    <div class="tour-footer">
+      <div class="tour-step" id="tour-step">Step 1 of 6</div>
+      <div class="tour-actions">
+        <button id="tour-back" class="tour-btn" type="button">Back</button>
+        <button id="tour-next" class="tour-btn primary" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</body>
+</html>
+
+

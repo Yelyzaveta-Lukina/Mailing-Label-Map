@@ -1,0 +1,987 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+:root {
+  --header-h: 72px;
+
+  /* sidebar sizing */
+  --sidebar-w: 240px;
+  --sidebar-gap: 20px;
+
+  /* NEW THEME (Teal + light beige) */
+  --header-teal: #0b6f73;     /* teal like your screenshot */
+  --nav-bg: #f3e7da;          /* lighter background like screenshot 2 */
+  --nav-text: #d46b08;        /* bright orange text */
+
+  --cream: #ffffff;
+}
+
+/* Push the app down so the map isn't hidden behind the header */
+.app {
+  padding-top: var(--header-h);
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.sidebar {
+  position: fixed;
+  top: calc(var(--header-h) + 20px);
+  left: 20px;
+  width: 260px;
+
+  /* SAME gradient as header */
+  background: var(--nav-bg);
+
+  padding: 10px;
+
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+
+  z-index: 10;
+}
+
+.sidebar h3 {
+  color: var(--nav-text);
+  font-weight: 800;
+}
+
+/* Sidebar icon navigation */
+.nav-icons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.icon-btn {
+  width: 100%;
+  height: 44px;
+
+  /* override global button spacing */
+  margin-bottom: 0;
+  padding: 0;
+
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: #fff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 20px;
+  line-height: 1;
+
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  color: var(--header-teal);
+}
+
+.icon-btn:hover {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.20);
+  transform: translateY(-1px);
+}
+
+.icon-btn:active {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transform: translateY(0);
+}
+
+.icon-btn.danger {
+  border-color: rgba(176, 0, 32, 0.25);
+}
+
+.main {
+  height: 100%;
+  width: 100%;
+}
+
+/* Make the map fill the main area */
+arcgis-map {
+  height: 100%;
+  width: 100%;
+  display: block;
+}
+
+/* Global buttons (sidebar) */
+button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+
+  cursor: pointer;
+  font-size: 14px;
+
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+  transform: translateY(-1px);
+}
+
+button:active {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transform: translateY(0);
+}
+
+/* Help button in sidebar */
+.help-btn{
+  width: 100%;
+  margin-top: 12px;
+  margin-bottom: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: #fff;
+  color: var(--nav-text);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Help Center action buttons */
+.help-actions{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.help-action{
+  width: 100%;
+  margin: 0;
+  padding: 14px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: #fff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.help-action.primary{
+  background: rgba(11, 111, 115, 0.10); /* uses your teal vibe */
+  border-color: rgba(11, 111, 115, 0.35);
+}
+
+.sidebar input,
+.sidebar select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* Popup styling (if you use these classes) */
+.popup-card {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  min-width: 240px;
+}
+
+.popup-header {
+  background: var(--sand);
+  color: var(--earth-dark);
+  font-weight: 700;
+  padding: 10px 12px;
+  border-radius: 6px 6px 0 0;
+  font-size: 14px;
+}
+
+.popup-body {
+  padding: 10px 12px;
+}
+
+.popup-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.popup-row .label {
+  color: #666;
+  font-weight: 500;
+}
+
+.popup-row .value {
+  color: #222;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Toast (bottom-right) */
+.toast {
+  position: fixed;
+  right: 90px;
+  bottom: 22px;
+  z-index: 2000;
+
+  width: 320px;
+  padding: 14px 16px;
+
+  background: rgba(20, 85, 80, 0.92);
+  color: white;
+
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  backdrop-filter: blur(6px);
+}
+
+.toast-title {
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.toast-sub {
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Floating buttons (bottom-right icons) */
+.floating-btn {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 2000;
+
+  width: 52px;
+  height: 52px;
+
+  /* override global button styles */
+  margin-bottom: 0;
+  padding: 0;
+
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: rgba(250, 247, 242, 0.95);
+
+  box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+  cursor: pointer;
+  font-size: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tour arrow */
+.tour-arrow{
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+/* Arrow on LEFT side (card pointing RIGHT → element on right) */
+.tour-card.arrow-left .tour-arrow{
+  left: -10px;
+  top: 40px;
+  border-width: 8px 10px 8px 0;
+  border-color: transparent #ffffff transparent transparent;
+}
+
+/* Arrow on RIGHT side (card pointing LEFT → element on left) */
+.tour-card.arrow-right .tour-arrow{
+  right: -10px;
+  top: 40px;
+  border-width: 8px 0 8px 10px;
+  border-color: transparent transparent transparent #ffffff;
+}
+
+.floating-btn.is-disabled {
+  opacity: 1;            
+  cursor: pointer;          /* still clickable */
+  pointer-events: auto;     /* allow hover + click */
+}
+
+/* Draft Labels button sits above radius button */
+.draft-btn {
+  bottom: 214px;
+}
+
+/* Tooltips (works for ALL floating buttons: list/draw/radius) */
+.fab-tooltip {
+  position: absolute;
+  right: 62px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(20, 20, 20, 0.92);
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3000;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.floating-btn:hover .fab-tooltip {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+/* Draw button sits above list button */
+.draw-btn {
+  bottom: 86px;
+}
+
+/* Radius button sits above draw button */
+.radius-btn {
+  bottom: 150px;
+}
+
+/* Draw menu */
+.draw-menu {
+  position: fixed;
+  right: 22px;
+  bottom: 146px; /* above draw button */
+  z-index: 2200;
+
+  background: rgba(250, 247, 242, 0.98);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.draw-menu button {
+  width: auto;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+}
+
+.draw-menu button:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Radius panel hidden in sidebar (since you use the floating menu) */
+.radius-panel.hidden {
+  display: none !important;
+}
+
+/* Radius menu popover */
+.radius-menu {
+  position: fixed;
+  right: 22px;
+  bottom: 210px; /* above radius button */
+  z-index: 2200;
+
+  width: 220px;
+  padding: 10px;
+
+  background: rgba(250, 247, 242, 0.98);
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+.radius-menu-title {
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: rgba(78, 52, 46, 0.95);
+}
+
+.radius-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 8px 0 6px;
+  color: rgba(78, 52, 46, 0.9);
+}
+
+.radius-menu input,
+.radius-menu select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.15);
+  font-size: 14px;
+}
+
+.radius-menu button {
+  width: 100%;
+  margin: 10px 0 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: white;
+  cursor: pointer;
+}
+
+/* Modal / Sheet */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.modal {
+  width: min(1100px, 96vw);
+  max-height: 80vh;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+
+  background: var(--header-teal);   /* teal header */
+  border-bottom: none;
+}
+
+.modal-title {
+  font-weight: 900;
+  color: #fff;          /* white text */
+  font-size: 16px;
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.modal-body {
+  padding: 12px 14px 16px 14px;
+  display: block;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow: auto;
+  max-height: calc(80vh - 120px);
+  border: 1px solid #eee;
+  border-radius: 12px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--cream);
+  z-index: 1;
+  font-weight: 800;
+}
+
+.data-table tbody tr:hover {
+  background: #fafafa;
+}
+
+/* User Guide scrollable body */
+.guide-body{
+  line-height: 1.6;
+  max-height: calc(80vh - 120px); /* keeps header visible */
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.guide-body{
+  scroll-behavior: smooth;
+}
+
+/* Modal toolbar */
+.addr-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 10px 0 14px 0;
+}
+
+.addr-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.filter-input {
+  width: 200px;
+  max-width: 40vw;
+  padding: 8px 10px;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 10px;
+  outline: none;
+}
+
+.filter-select {
+  width: auto;
+  padding: 8px 10px;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.filter-clear {
+  width: auto;       /* override global button width */
+  margin-bottom: 0;  /* override global button margin */
+  padding: 8px 12px;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 10px;
+  background: #f7f7f7;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.addr-count {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.addr-actions{
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.download-btn{
+  width: auto;        /* override global button width */
+  margin-bottom: 0;   /* override global button margin */
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.15);
+  background: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.download-menu{
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 5000;
+
+  min-width: 170px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  background: rgba(250, 247, 242, 0.98);
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+.download-menu button{
+  width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.download-menu button:hover{
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.modal-title .modal-count {
+  font-weight: 900;
+  margin-left: 8px;
+}
+
+.addr-toolbar{
+  flex-wrap: wrap;
+}
+
+.addr-actions{
+  gap: 10px;
+}
+
+/* Header layout */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-h);
+
+  background: var(--header-teal);
+  color: var(--cream);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 22px;
+
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+
+/* Left title */
+.topbar-title.left {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Right logo */
+.topbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.topbar-logo {
+  height: 65px;   /* bigger again */
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+}
+
+.empty-state{
+  background: var(--cream);
+  border: 1px dashed rgba(78,52,46,0.35);
+  color: rgba(78,52,46,0.95);
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  margin: 8px 0 12px 0;
+}
+
+/* -------------------------
+   Map Legend (collapsible)
+-------------------------- */
+.legend{
+  position: fixed;
+  left: 20px;
+  bottom: 32px;
+  z-index: 2400;
+
+  width: 260px;
+  border-radius: 14px;
+  overflow: hidden;
+
+  box-shadow: 0 10px 26px rgba(0,0,0,0.20); /* slightly softer */
+}
+
+/* Header bar (teal like example) */
+.legend-toggle{
+  width: 100%;
+  margin: 0;
+  border: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 14px;
+  background: var(--header-teal);  /* uses your header teal */
+  color: #fff;
+
+  cursor: pointer;
+}
+
+.legend-icon{ font-size: 16px; }
+.legend-title{
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  flex: 1;
+  text-align: left;
+}
+
+.legend-arrow{
+  margin-left: auto;          /* forces arrow to the far right */
+  font-size: 22px;
+  line-height: 1;
+  transform: rotate(90deg);   /* OPEN state (expanded) */
+  transition: transform 180ms ease;
+}
+
+/* Body (white card) */
+.legend-body{
+  background: #fff;
+  padding: 12px 14px;
+  border: 1px solid rgba(0,0,0,0.10);
+  border-top: 0;
+}
+
+.legend-section-title{
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  color: rgba(0,0,0,0.55);
+  margin: 2px 0 10px 0;
+}
+
+.legend-item{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+}
+
+.legend-text{
+  font-size: 13px;
+  color: rgba(0,0,0,0.78);
+}
+
+/* Swatches */
+.swatch{ display:inline-block; }
+
+.swatch.line{
+  width: 34px;
+  height: 12px;              /* ✅ give it vertical space */
+  display: flex;
+  align-items: center;      /* ✅ centers the line inside */
+}
+
+.swatch.line::before{
+  content: "";
+  width: 100%;
+  border-top: 4px solid;
+  border-radius: 2px;
+}
+
+.swatch.line.red::before{
+  border-top-color: #d90000;
+}
+
+.swatch.line.teal::before{
+  border-top-color: #007973;
+}
+
+.swatch.dot{
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.swatch.dot.blue{
+  background: #1e6fe8;
+  border: 2px solid rgba(255,255,255,0.9);
+}
+
+/* selected address swatch: blue center, red ring, white outer ring */
+.swatch.dot.selected{
+  background: #1e6fe8;            /* blue center */
+  border: 3px solid #d90000;      /* red ring */
+  box-shadow: 0 0 0 3px #ffffff;  /* white outer ring */
+}
+
+.swatch.box{
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 3px solid;
+  background: rgba(0,121,115,0.12);
+}
+
+.swatch.box.teal{ border-color: #007973; }
+
+/* Collapsed state */
+.legend.is-collapsed .legend-body{
+  display: none;
+}
+.legend.is-collapsed .legend-arrow{
+  transform: rotate(0deg);
+}
+
+.swatch{
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  flex: 0 0 18px;
+
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-row{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;   
+}
+
+.legend-row span:last-child{
+  flex: 1;
+}
+
+/* -------------------------
+   Quick Tour (overlay + card)
+-------------------------- */
+.tour-overlay{
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(0,0,0,0.20);
+}
+
+.tour-card{
+  position: fixed;
+  width: min(360px, 92vw);
+  background: #fff;
+
+  /* only bottom corners rounded */
+  border-radius: 0 0 14px 14px;
+
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.9);
+
+  overflow: visible;
+}
+
+.tour-top{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--header-teal);
+  color: #fff;
+
+  border-radius: 0 0 12px 12px;
+}
+
+.tour-title{
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.tour-exit{
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.tour-body{
+  padding: 12px 12px 10px 12px;
+  font-size: 14px;
+  color: rgba(0,0,0,0.80);
+  line-height: 1.55;
+}
+
+.tour-footer{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px 12px 12px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+.tour-step{
+  font-size: 12px;
+  color: rgba(0,0,0,0.55);
+  font-weight: 700;
+}
+
+.tour-actions{
+  display: flex;
+  gap: 8px;
+}
+
+.tour-btn{
+  width: auto;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.tour-btn.primary{
+  background: rgba(11, 111, 115, 0.10);
+  border-color: rgba(11, 111, 115, 0.35);
+}
+
+/* Tour spotlight ring (no position changes!) */
+.tour-spotlight{
+  outline: 3px solid rgba(255,255,255,0.95);
+  box-shadow: 0 0 0 6px rgba(11,111,115,0.55), 0 10px 26px rgba(0,0,0,0.25);
+  border-radius: 16px; /* matches your floating buttons */
+}
+
+.icon-btn i {
+  font-size: 22px;
+}
+
+.floating-btn {
+  color: var(--header-teal);
+}
+
+#guide-overlay i.fa-solid {
+  margin-left: 6px;
+  font-size: 0.95em;
+  opacity: 0.85;
+}
+
+
